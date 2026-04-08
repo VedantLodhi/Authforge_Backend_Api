@@ -1,16 +1,18 @@
 //  ---> PROMISE-BASED ERROR HANDLING FOR ASYNC FUNCTIONS <---
 
 const asyncHandler = (requestHandler) => {
-    (req,res,next) => {
-     Promise.resolve(requestHandler(req,res,next)).catch((err) => next(err))
-    }
-}
+  return (req, res, next) => {
+    Promise.resolve(requestHandler(req, res, next)).catch((err) =>
+      next(err)
+    );
+  };
+};
+
+export { asyncHandler };
 
 
-import req from "express/lib/request"
-import { json } from "express/lib/response"
 
-export {asyncHandler}
+
 
 
 /*  ------> TRY-CATCH BLOCK FOR ASYNC FUNCTIONS <------  
