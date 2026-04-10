@@ -70,8 +70,9 @@ userSchema.pre("save", async function () {
 //  CHECK IF THE PASSWORD IS CORRECT OR NOT
 userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password, this.password)
-}
+} 
 
+// GENERATE ACCESS TOKEN FOR THE USER
 userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
         {
@@ -88,6 +89,7 @@ userSchema.methods.generateAccessToken = function () {
         }
     )
 }
+//  GENERATE REFRESH TOKEN FOR THE USER
 userSchema.methods.generateRefreshToken = function () {
     return jwt.sign(
         {
