@@ -410,8 +410,64 @@ const getUserChannelProfile = asyncHandler(async (req, res) =>
         return res.status(200).json(
             new ApiResponse(200, channel[0], "Channel profile fetched successfully")
         );
-
     })
+
+
+const getWatchHistory = asyncHandler(async (req, res) => 
+    {
+        const user = await User.aggregate([
+            {
+                $match: {
+                    // mongoose.Types.ObjectId(req.user._id) is not working in match stage, so we have to use new mongoose.Types.ObjectId(req.user._id)
+                    _id: new mongoose.Types.ObjectId(req.user._id)
+                }
+            },
+            {
+                $lookup: {
+                    from: "videos",
+                    localField: "watchHistory",
+                    foreignField: "_id",
+                    as: "watchHistory",
+                    pipeline: [
+                        {
+                            // Lookup owner details
+                            $lookup:
+                            {
+                                from: "users",
+                                localField: "owner",
+                                foreignField: "_id",
+                                as: "ownerDetails",
+                                pipeline: [
+                                    {
+                                    // Project the required fields of the owner (channel) of the video
+                                    $project:
+                                    {
+                                        fullName: 1,
+                                        username: 1,
+                                        avatar: 1
+                                    }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            // Since ownerDetails is an array (because of the $lookup), we need to use $first to get the first element of the array which contains the owner details
+                            $addFields: {
+                                owner:{
+                                    $first: "$ownerDetails"
+                                }
+                            }
+                        }
+                    ]
+                }
+
+            }
+        ])
+
+        return res.status(200).json(
+            new ApiResponse(200, user[0]?.watchHistory || [], "Watch history fetched successfully")
+        );
+    })    
     
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentUserPassword , getCurrentUser, updateAccountdetails, updateUserAvatar, updateUserCoverImage, getUserChannelProfile};
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentUserPassword , getCurrentUser, updateAccountdetails, updateUserAvatar, updateUserCoverImage, getUserChannelProfile, getWatchHistory,};
